@@ -1,13 +1,11 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"faker-douyin/global"
+	"faker-douyin/model/dao"
+)
 
 func main() {
-	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
-	_ = r.Run(":8080")
+	global.LoadConfig()
+	dao.Init()
 }

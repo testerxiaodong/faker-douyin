@@ -1,0 +1,37 @@
+server:
+  AppMode: "debug"
+  HttpPort: ":8080"
+
+mysql:
+  Host: "192.168.18.3"
+  Port: "3306"
+  User: "root"
+  Password: "123456"
+  Name: "douyin"
+
+redis:
+  Host: "192.168.18.3"
+  Port: "6379"
+  Password: "123456"
+
+rabbitmq:
+  Host: "192.168.18.3"
+  Port: "5672"
+  User: "guest"
+  Password: "guest"
+
+jwt:
+  secret: "douyin"
+
+ssh:
+  Host: "192.168.18.3"
+  User: "ftpuser"
+  Password: "123456"
+
+ftp:
+  Host: "192.168.18.3"
+  Port: "21"
+  User: "ftpuser"
+  Password: "123456"
+
+
