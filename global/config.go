@@ -32,7 +32,7 @@ type RabbitMq struct {
 }
 
 type Jwt struct {
-	secret string
+	Secret string
 }
 
 type Ssh struct {
@@ -106,7 +106,7 @@ func LoadRabbitMqConfig() {
 }
 
 func LoadJwtConfig() {
-	Config.Jwt.secret = viper.GetString("jwt.secret")
+	Config.Jwt.Secret = viper.GetString("jwt.secret")
 }
 
 func LoadSshConfig() {
