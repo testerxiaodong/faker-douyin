@@ -6,6 +6,7 @@ import (
 	"faker-douyin/model/dto/response"
 	"faker-douyin/model/entity"
 	"faker-douyin/service"
+	"faker-douyin/utils"
 	"github.com/gin-gonic/gin"
 	"log"
 )
@@ -14,24 +15,23 @@ import (
 func Register(c *gin.Context) {
 	var userRegisterReq request.UserRegisterReq
 	if err := c.ShouldBindJSON(&userRegisterReq); err != nil {
-
+		common.FailWithMessage(err.Error(), c)
+		return
 	}
-
 	usi := service.UserServiceImpl{}
-
 	u := usi.GetTableUserByUsername(userRegisterReq.Name)
-	if userRegisterReq.Name == u.Name {
+	if u.Name != "" {
 		common.FailWithMessage("User already exist", c)
 	} else {
 		newUser := entity.TableUser{
 			Name:     userRegisterReq.Name,
-			Password: service.EnCoder(userRegisterReq.Password),
+			Password: utils.EnCoder(userRegisterReq.Password),
 		}
 		if usi.InsertTableUser(&newUser) != true {
 			println("Insert Data Fail")
 		}
 		u := usi.GetTableUserByUsername(userRegisterReq.Name)
-		token := service.GenerateToken(userRegisterReq.Name)
+		token := utils.GenerateToken(userRegisterReq.Name)
 		log.Println("注册返回的id: ", u.ID)
 		common.OkWithData(response.UserLoginSuccessRes{Id: uint64(u.ID), Token: token}, c)
 	}

@@ -8,6 +8,7 @@ type TableUser struct {
 	Password string
 }
 
+// TableName 修改映射的表名为users
 func (tableUser TableUser) TableName() string {
 	return "users"
 }

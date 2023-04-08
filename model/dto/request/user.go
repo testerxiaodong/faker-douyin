@@ -1,6 +1,6 @@
 package request
 
 type UserRegisterReq struct {
-	Name     string `json:"name"`
-	Password string `json:"password"`
+	Name     string `json:"name,omitempty" binding:"required"`
+	Password string `json:"password,omitempty" binding:"required"`
 }

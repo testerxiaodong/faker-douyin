@@ -1,8 +1,8 @@
 package response
 
 type UserLoginSuccessRes struct {
-	Id    uint64
-	Token string
+	Id    uint64 `json:"id"`
+	Token string `json:"token"`
 }
 
 type GetUserByIdRes struct {
