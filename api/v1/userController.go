@@ -31,7 +31,7 @@ func Register(c *gin.Context) {
 			println("Insert Data Fail")
 		}
 		u := usi.GetTableUserByUsername(userRegisterReq.Name)
-		token := utils.GenerateToken(userRegisterReq.Name)
+		token := utils.GenerateToken(&u)
 		log.Println("注册返回的id: ", u.ID)
 		common.OkWithDetailed(response.UserRegisterSuccessRes{Id: uint64(u.ID), Token: token}, "注册成功", c)
 	}
@@ -48,7 +48,7 @@ func Login(c *gin.Context) {
 	usi := service.UserServiceImpl{}
 	u := usi.GetTableUserByUsername(userLoginReq.Name)
 	if utils.EnCoder(userLoginReq.Password) == u.Password {
-		token := utils.GenerateToken(userLoginReq.Name)
+		token := utils.GenerateToken(&u)
 		common.OkWithDetailed(response.UserLoginSuccessRes{Id: uint64(u.ID), Token: token}, "登陆成功", c)
 		return
 	} else {

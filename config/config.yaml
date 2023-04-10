@@ -25,13 +25,16 @@ jwt:
 
 ssh:
   Host: "192.168.18.3"
+  Port: "22"
   User: "ftpuser"
   Password: "123456"
+  TypeSsh: "password"
 
 ftp:
   Host: "192.168.18.3"
   Port: "21"
   User: "ftpuser"
   Password: "123456"
+  HeartbeatTime: 120
 
 

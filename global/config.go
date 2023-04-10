@@ -37,15 +37,18 @@ type Jwt struct {
 
 type Ssh struct {
 	Host     string
-	User     string
-	Password string
-}
-
-type Ftp struct {
-	Host     string
 	Port     string
 	User     string
 	Password string
+	TypeSsh  string
+}
+
+type Ftp struct {
+	Host          string
+	Port          string
+	User          string
+	Password      string
+	HeartbeatTime int64
 }
 
 type ConfigEnv struct {
@@ -63,7 +66,7 @@ var Config ConfigEnv
 func LoadConfig() {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath("./config")
+	viper.AddConfigPath("/Users/cengdong/GolandProjects/faker-douyin/config")
 	err := viper.ReadInConfig()
 	if err != nil {
 		panic(fmt.Errorf("fatal error config file: %w", err))
@@ -111,8 +114,10 @@ func LoadJwtConfig() {
 
 func LoadSshConfig() {
 	Config.Ssh.Host = viper.GetString("ssh.Host")
+	Config.Ssh.Port = viper.GetString("ssh.Port")
 	Config.Ssh.User = viper.GetString("ssh.User")
 	Config.Ssh.Password = viper.GetString("ssh.Password")
+	Config.Ssh.TypeSsh = viper.GetString("ssh.TypeSsh")
 }
 
 func LoadFtpConfig() {
@@ -120,4 +125,5 @@ func LoadFtpConfig() {
 	Config.Ftp.Port = viper.GetString("ftp.Port")
 	Config.Ftp.User = viper.GetString("ftp.User")
 	Config.Ftp.Password = viper.GetString("ftp.Password")
+	Config.Ftp.HeartbeatTime = viper.GetInt64("ftp.HeartbeatTime")
 }

@@ -3,7 +3,7 @@ package utils
 import (
 	"errors"
 	"faker-douyin/global"
-	"faker-douyin/service"
+	"faker-douyin/model/entity"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"strconv"
@@ -18,14 +18,13 @@ var (
 )
 
 // GenerateToken 根据username生成一个token
-func GenerateToken(username string) string {
-	u := service.UserService.GetTableUserByUsername(new(service.UserServiceImpl), username)
+func GenerateToken(user *entity.TableUser) string {
 	//fmt.Printf("generate token: %v\n", u)
 	expiresTime := time.Now().Unix() + int64(global.OneDayOfHours)
-	id64 := u.ID
+	id64 := user.ID
 	fmt.Printf("id: %v\n", strconv.FormatInt(int64(id64), 10))
 	claims := jwt.StandardClaims{
-		Audience:  u.Name,
+		Audience:  user.Name,
 		ExpiresAt: expiresTime,
 		Id:        strconv.FormatInt(int64(id64), 10),
 		IssuedAt:  time.Now().Unix(),
