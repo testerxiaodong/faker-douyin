@@ -8,4 +8,5 @@ import (
 func InitRouter(r *gin.Engine) {
 	apiRouter := r.Group("/douyin/v1")
 	apiRouter.POST("/user/register/", v1.Register)
+	apiRouter.POST("/user/login/", v1.Login)
 }

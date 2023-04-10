@@ -11,7 +11,7 @@ import (
 	"log"
 )
 
-// Register POST douyin/user/register/ 用户注册
+// Register POST douyin/v1/user/register/ 用户注册
 func Register(c *gin.Context) {
 	var userRegisterReq request.UserRegisterReq
 	if err := c.ShouldBindJSON(&userRegisterReq); err != nil {
@@ -33,6 +33,25 @@ func Register(c *gin.Context) {
 		u := usi.GetTableUserByUsername(userRegisterReq.Name)
 		token := utils.GenerateToken(userRegisterReq.Name)
 		log.Println("注册返回的id: ", u.ID)
-		common.OkWithData(response.UserLoginSuccessRes{Id: uint64(u.ID), Token: token}, c)
+		common.OkWithDetailed(response.UserRegisterSuccessRes{Id: uint64(u.ID), Token: token}, "注册成功", c)
+	}
+}
+
+// Login POST douyin/v1/user/login/ 用户登陆
+func Login(c *gin.Context) {
+	var userLoginReq request.UserLoginReq
+	err := c.ShouldBindJSON(&userLoginReq)
+	if err != nil {
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+	usi := service.UserServiceImpl{}
+	u := usi.GetTableUserByUsername(userLoginReq.Name)
+	if utils.EnCoder(userLoginReq.Password) == u.Password {
+		token := utils.GenerateToken(userLoginReq.Name)
+		common.OkWithDetailed(response.UserLoginSuccessRes{Id: uint64(u.ID), Token: token}, "登陆成功", c)
+		return
+	} else {
+		common.FailWithMessage("username or password error", c)
 	}
 }

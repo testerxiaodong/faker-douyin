@@ -1,5 +1,10 @@
 package response
 
+type UserRegisterSuccessRes struct {
+	Id    uint64 `json:"id"`
+	Token string `json:"token"`
+}
+
 type UserLoginSuccessRes struct {
 	Id    uint64 `json:"id"`
 	Token string `json:"token"`
