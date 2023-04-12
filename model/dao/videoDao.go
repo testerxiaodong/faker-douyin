@@ -34,14 +34,14 @@ func GetVideosByLastTime(lastTime time.Time) ([]entity.TableVideo, error) {
 }
 
 // InsertTableVideo 插入视频数据
-func InsertTableVideo(title string, videoName string, imageName string, authorId uint64) error {
+func InsertTableVideo(title string, videoName string, imageName string, authorId uint64) (entity.TableVideo, error) {
 	var video entity.TableVideo
 	video.Title = title
 	video.PlayUrl = global.PlayUrlPrefix + videoName + ".mp4"
 	video.CoverUrl = global.CoverUrlPrefix + imageName + ".jpg"
 	video.AuthorId = authorId
 	if err := Db.Save(&video).Error; err != nil {
-		return err
+		return video, err
 	}
-	return nil
+	return video, nil
 }

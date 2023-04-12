@@ -44,8 +44,9 @@ func TestGetVideosByLastTime(t *testing.T) {
 func TestInsertTableVideo(t *testing.T) {
 	global.LoadConfig()
 	Init()
-	err := InsertTableVideo("测试标题", "测试视频名", "测试封面名", 2)
+	video, err := InsertTableVideo("测试标题", "测试视频名", "测试封面名", 2)
 	if err != nil {
 		t.Error(err)
 	}
+	t.Log(video)
 }
