@@ -27,13 +27,13 @@ func Register(c *gin.Context) {
 			Name:     userRegisterReq.Name,
 			Password: utils.EnCoder(userRegisterReq.Password),
 		}
-		if usi.InsertTableUser(&newUser) != true {
+		user, err := usi.InsertTableUser(newUser)
+		if err != nil {
 			println("Insert Data Fail")
 		}
-		u := usi.GetTableUserByUsername(userRegisterReq.Name)
-		token := utils.GenerateToken(&u)
-		log.Println("注册返回的id: ", u.ID)
-		common.OkWithDetailed(response.UserRegisterSuccessRes{Id: uint64(u.ID), Token: token}, "注册成功", c)
+		token := utils.GenerateToken(&user)
+		log.Println("注册返回的id: ", user.ID)
+		common.OkWithDetailed(response.UserRegisterSuccessRes{Id: uint64(user.ID), Token: token}, "注册成功", c)
 	}
 }
 
@@ -54,4 +54,21 @@ func Login(c *gin.Context) {
 	} else {
 		common.FailWithMessage("username or password error", c)
 	}
+}
+
+// UserInfo GET douyin/v1/user/ 获取用户信息
+func UserInfo(c *gin.Context) {
+	var userInfoReq request.UserInfoReq
+	err := c.ShouldBindJSON(&userInfoReq)
+	if err != nil {
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+	usi := service.UserServiceImpl{}
+	userInfo, err := usi.GetTableUserById(userInfoReq.UserId)
+	if err != nil {
+		common.FailWithMessage("user not exist", c)
+		return
+	}
+	common.OkWithData(userInfo, c)
 }

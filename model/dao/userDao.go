@@ -36,10 +36,10 @@ func GetTableUserById(id uint64) (entity.TableUser, error) {
 }
 
 // InsertTableUser 将tableUser插入表内
-func InsertTableUser(tableUser *entity.TableUser) bool {
-	if err := Db.Create(tableUser).Error; err != nil {
+func InsertTableUser(tableUser entity.TableUser) (entity.TableUser, error) {
+	if err := Db.Create(&tableUser).Error; err != nil {
 		log.Println(err.Error())
-		return false
+		return tableUser, err
 	}
-	return true
+	return tableUser, nil
 }

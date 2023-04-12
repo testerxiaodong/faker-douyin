@@ -3,6 +3,7 @@ package service
 import "C"
 import (
 	"faker-douyin/model/dao"
+	"faker-douyin/model/dto/response"
 	"faker-douyin/model/entity"
 	"log"
 )
@@ -28,22 +29,26 @@ func (u UserServiceImpl) GetTableUserByUsername(name string) entity.TableUser {
 	return tableUser
 }
 
-func (u UserServiceImpl) GetTableUserById(id uint64) entity.TableUser {
+func (u UserServiceImpl) GetTableUserById(id uint64) (response.UserInfoRes, error) {
+	var userInfo response.UserInfoRes
 	tableUser, err := dao.GetTableUserById(id)
+	userInfo.Id = uint64(tableUser.ID)
+	userInfo.Name = tableUser.Name
 	if err != nil {
 		log.Println(err.Error())
-		return tableUser
+		return userInfo, err
 	}
-	return tableUser
+	return userInfo, nil
 }
 
-func (u UserServiceImpl) InsertTableUser(tableUser *entity.TableUser) bool {
-	result := dao.InsertTableUser(tableUser)
-	if result == false {
+func (u UserServiceImpl) InsertTableUser(tableUser entity.TableUser) (entity.TableUser, error) {
+	var user entity.TableUser
+	user, err := dao.InsertTableUser(tableUser)
+	if err != nil {
 		log.Println("插入失败")
-		return false
+		return user, err
 	}
-	return true
+	return user, nil
 }
 
 //func (u UserServiceImpl) GetUserById(id uint64) (response.GetUserByIdRes, error) {

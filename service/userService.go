@@ -1,6 +1,7 @@
 package service
 
 import (
+	"faker-douyin/model/dto/response"
 	"faker-douyin/model/entity"
 )
 
@@ -15,10 +16,10 @@ type UserService interface {
 	GetTableUserByUsername(name string) entity.TableUser
 
 	// GetTableUserById 根据user_id获得TableUser对象
-	GetTableUserById(id uint64) entity.TableUser
+	GetTableUserById(id uint64) (response.UserInfoRes, error)
 
 	// InsertTableUser 将tableUser插入表内
-	InsertTableUser(tableUser *entity.TableUser) bool
+	InsertTableUser(tableUser entity.TableUser) (entity.TableUser, error)
 	/*
 		他人使用
 	*/

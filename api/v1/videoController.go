@@ -2,10 +2,14 @@ package v1
 
 import (
 	"faker-douyin/model/common"
+	"faker-douyin/model/dto/request"
+	"faker-douyin/model/dto/response"
 	"faker-douyin/service"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
 	"strconv"
+	"time"
 )
 
 func Publish(c *gin.Context) {
@@ -21,11 +25,47 @@ func Publish(c *gin.Context) {
 		common.FailWithMessage(err.Error(), c)
 		return
 	}
-	vsi := service.VideoServiceImpl{}
-	err = vsi.Publish(file, uint64(userId), title)
+	vsi := service.VideoServiceImpl{UserService: service.UserServiceImpl{}}
+	var video response.PublishVideoRes
+	video, err = vsi.Publish(file, uint64(userId), title)
 	if err != nil {
 		common.FailWithMessage(err.Error(), c)
 		return
 	}
-	common.OkWithMessage("upload success", c)
+	common.OkWithDetailed(video, "upload success", c)
+}
+
+func Feed(c *gin.Context) {
+	var videoFeedReq request.VideoFeedReq
+	err := c.ShouldBindJSON(&videoFeedReq)
+	if err != nil {
+		log.Println("绑定参数失败")
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+	vsi := service.VideoServiceImpl{UserService: service.UserServiceImpl{}}
+	videoInfo, lastTime, err := vsi.Feed(time.Time(videoFeedReq.LastTime))
+	if err != nil {
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+	common.OkWithData(response.VideoFeedRes{VideosInfo: videoInfo, LastTime: lastTime}, c)
+}
+
+func List(c *gin.Context) {
+	var VideoListReq request.VideoListReq
+	err := c.ShouldBindJSON(&VideoListReq)
+	if err != nil {
+		fmt.Println("参数绑定失败")
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+	vsi := service.VideoServiceImpl{UserService: service.UserServiceImpl{}}
+	videoList, err := vsi.List(VideoListReq.UserId)
+	if err != nil {
+		fmt.Println("VideoService.List 失败，user_id：", VideoListReq.UserId)
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+	common.OkWithData(response.VideoListRes{VideosInfo: videoList}, c)
 }
