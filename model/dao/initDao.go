@@ -35,7 +35,7 @@ func Init() {
 		log.Panicln("err:", err.Error())
 	}
 	fmt.Println("数据库链接成功")
-	err = Db.AutoMigrate(&entity.TableUser{}, &entity.TableVideo{})
+	err = Db.AutoMigrate(&entity.TableUser{}, &entity.TableVideo{}, entity.TableComment{})
 	if err != nil {
 		panic(fmt.Sprintf("数据库迁移失败,%s", err))
 	}

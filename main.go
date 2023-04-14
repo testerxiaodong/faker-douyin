@@ -9,6 +9,7 @@ import (
 )
 
 func main() {
+	utils.InitFilter()
 	global.LoadConfig()
 	dao.Init()
 	utils.InitFtp()

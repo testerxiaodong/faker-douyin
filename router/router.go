@@ -14,4 +14,6 @@ func InitRouter(r *gin.Engine) {
 	apiRouter.POST("/video/publish/", middleware.Auth(), v1.Publish)
 	apiRouter.GET("/video/feed/", v1.Feed)
 	apiRouter.GET("/video/publish/list/", v1.List)
+	apiRouter.POST("/comment/action/", middleware.Auth(), v1.CommentAction)
+	apiRouter.GET("/comment/list/", v1.CommentList)
 }

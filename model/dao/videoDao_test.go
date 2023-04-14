@@ -22,7 +22,7 @@ func TestGetVideosByAuthorId(t *testing.T) {
 func TestGetVideoById(t *testing.T) {
 	global.LoadConfig()
 	Init()
-	data, err := GetVideoById(1)
+	data, err := GetVideoById(11)
 	if err != nil {
 		t.Error(err)
 	}

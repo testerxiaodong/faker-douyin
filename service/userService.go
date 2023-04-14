@@ -13,7 +13,7 @@ type UserService interface {
 	GetTableUserList() []entity.TableUser
 
 	// GetTableUserByUsername 根据username获得TableUser对象
-	GetTableUserByUsername(name string) entity.TableUser
+	GetTableUserByUsername(name string) (entity.TableUser, error)
 
 	// GetTableUserById 根据user_id获得TableUser对象
 	GetTableUserById(id uint64) (response.UserInfoRes, error)
