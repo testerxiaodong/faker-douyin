@@ -9,7 +9,11 @@ import (
 	"strconv"
 )
 
-func CommentAction(c *gin.Context) {
+type CommentController struct {
+}
+
+// CommentAction POST /douyin/v1/comment/action/ 发表评论和删除评论
+func (cc *CommentController) CommentAction(c *gin.Context) {
 	var commentActionReq request.CommentActionReq
 	// 请求参数绑定和校验
 	err := c.ShouldBindJSON(&commentActionReq)
@@ -20,9 +24,10 @@ func CommentAction(c *gin.Context) {
 	id, _ := c.Get("userId")
 	// 从上下文中获取用户id
 	userId, err := strconv.Atoi(id.(string))
+	// 依赖倒转原则，面向抽象层进行开发
+	csi := service.NewCommentService(&service.UserServiceImpl{})
 	// 删除逻辑
 	if commentActionReq.ActionType == 1 {
-		csi := service.CommentServiceImpl{}
 		// 获取评论信息
 		comment, err := csi.CommentInfo(commentActionReq.CommentId)
 		if err != nil {
@@ -30,7 +35,7 @@ func CommentAction(c *gin.Context) {
 			return
 		}
 		// 当前评论非当前用户发表，无权删除
-		if comment.UserId != uint64(userId) {
+		if comment.UserID != int64(userId) {
 			common.FailWithMessage("current comment is not created by this user", c)
 			return
 		}
@@ -51,9 +56,8 @@ func CommentAction(c *gin.Context) {
 			common.FailWithMessage("评论包含敏感词，操作失败", c)
 			return
 		}
-		csi := service.CommentServiceImpl{}
 		// 插入评论
-		comment, err := csi.InsertComment(uint64(userId), commentActionReq.VideoId, commentActionReq.CommentContent)
+		comment, err := csi.InsertComment(int64(userId), commentActionReq.VideoId, commentActionReq.CommentContent)
 		if err != nil {
 			common.FailWithMessage(err.Error(), c)
 			return
@@ -64,7 +68,8 @@ func CommentAction(c *gin.Context) {
 	common.FailWithMessage("action type error", c)
 }
 
-func CommentList(c *gin.Context) {
+// CommentList GET /douyin/v1/comment/list/ 获取评论列表
+func (cc *CommentController) CommentList(c *gin.Context) {
 	var commentListReq request.CommentListReq
 	// 请求参数绑定和校验
 	err := c.ShouldBindJSON(&commentListReq)
@@ -72,7 +77,8 @@ func CommentList(c *gin.Context) {
 		common.FailWithMessage(err.Error(), c)
 		return
 	}
-	csi := service.CommentServiceImpl{}
+	// 依赖倒转原则，面向抽象层进行开发
+	csi := service.NewCommentService(&service.UserServiceImpl{})
 	// 获取评论列表
 	commentList, err := csi.CommentList(commentListReq.VideoId)
 	if err != nil {

@@ -13,5 +13,5 @@ type VideoFeedReq struct {
 }
 
 type VideoListReq struct {
-	UserId uint64 `json:"user_id" binding:"required"`
+	UserId int64 `json:"user_id" binding:"required"`
 }

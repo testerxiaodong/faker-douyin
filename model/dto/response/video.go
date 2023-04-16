@@ -6,12 +6,13 @@ import (
 )
 
 type PublishVideoRes struct {
-	Video entity.TableVideo `json:"video"`
+	Video entity.Video `json:"video"`
 }
 
 type VideoInfoRes struct {
-	Video  entity.TableVideo
-	Author UserInfoRes `json:"author"`
+	Video        entity.Video
+	Author       UserInfoRes `json:"author"`
+	CommentCount int64       `json:"comment_count"`
 }
 
 type VideoFeedRes struct {

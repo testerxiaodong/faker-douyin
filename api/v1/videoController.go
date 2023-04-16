@@ -13,7 +13,10 @@ import (
 	"time"
 )
 
-func Publish(c *gin.Context) {
+type VideoController struct {
+}
+
+func (v *VideoController) Publish(c *gin.Context) {
 	// userId在jwt中间件中已被存入Context
 	userId, err := strconv.ParseInt(c.GetString("userId"), 10, 64)
 	if err != nil {
@@ -40,9 +43,9 @@ func Publish(c *gin.Context) {
 		return
 	}
 	// 插入视频
-	vsi := service.VideoServiceImpl{UserService: service.UserServiceImpl{}}
+	vsi := service.NewVideoService(&service.UserServiceImpl{}, &service.CommentServiceImpl{})
 	var video response.PublishVideoRes
-	video, err = vsi.Publish(file, uint64(userId), title)
+	video, err = vsi.Publish(file, userId, title)
 	if err != nil {
 		common.FailWithMessage(err.Error(), c)
 		return
@@ -50,7 +53,7 @@ func Publish(c *gin.Context) {
 	common.OkWithDetailed(video, "upload success", c)
 }
 
-func Feed(c *gin.Context) {
+func (v *VideoController) Feed(c *gin.Context) {
 	var videoFeedReq request.VideoFeedReq
 	// 请求参数绑定与校验
 	err := c.ShouldBindJSON(&videoFeedReq)
@@ -60,7 +63,7 @@ func Feed(c *gin.Context) {
 		return
 	}
 	// 获取视频流
-	vsi := service.VideoServiceImpl{UserService: service.UserServiceImpl{}}
+	vsi := service.NewVideoService(&service.UserServiceImpl{}, &service.CommentServiceImpl{})
 	videoInfo, lastTime, err := vsi.Feed(time.Time(videoFeedReq.LastTime))
 	if err != nil {
 		common.FailWithMessage(err.Error(), c)
@@ -69,7 +72,7 @@ func Feed(c *gin.Context) {
 	common.OkWithData(response.VideoFeedRes{VideosInfo: videoInfo, LastTime: lastTime}, c)
 }
 
-func List(c *gin.Context) {
+func (v *VideoController) List(c *gin.Context) {
 	var VideoListReq request.VideoListReq
 	// 请求参数绑定与校验
 	err := c.ShouldBindJSON(&VideoListReq)
@@ -79,7 +82,7 @@ func List(c *gin.Context) {
 		return
 	}
 	// 获取视频列表
-	vsi := service.VideoServiceImpl{UserService: service.UserServiceImpl{}}
+	vsi := service.NewVideoService(&service.UserServiceImpl{}, &service.CommentServiceImpl{})
 	videoList, err := vsi.List(VideoListReq.UserId)
 	if err != nil {
 		fmt.Println("VideoService.List 失败，user_id：", VideoListReq.UserId)

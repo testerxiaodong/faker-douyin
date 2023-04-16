@@ -8,12 +8,18 @@ import (
 
 func InitRouter(r *gin.Engine) {
 	apiRouter := r.Group("/douyin/v1")
-	apiRouter.POST("/user/register/", v1.Register)
-	apiRouter.POST("/user/login/", v1.Login)
-	apiRouter.GET("/user/", middleware.Auth(), v1.UserInfo)
-	apiRouter.POST("/video/publish/", middleware.Auth(), v1.Publish)
-	apiRouter.GET("/video/feed/", v1.Feed)
-	apiRouter.GET("/video/publish/list/", v1.List)
-	apiRouter.POST("/comment/action/", middleware.Auth(), v1.CommentAction)
-	apiRouter.GET("/comment/list/", v1.CommentList)
+
+	userController := v1.UserController{}
+	apiRouter.POST("/user/register/", userController.Register)
+	apiRouter.POST("/user/login/", userController.Login)
+	apiRouter.GET("/user/", middleware.Auth(), userController.UserInfo)
+
+	videoController := v1.VideoController{}
+	apiRouter.POST("/video/publish/", middleware.Auth(), videoController.Publish)
+	apiRouter.GET("/video/feed/", videoController.Feed)
+	apiRouter.GET("/video/publish/list/", videoController.List)
+
+	commentController := v1.CommentController{}
+	apiRouter.POST("/comment/action/", middleware.Auth(), commentController.CommentAction)
+	apiRouter.GET("/comment/list/", commentController.CommentList)
 }
