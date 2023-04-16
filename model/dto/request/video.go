@@ -5,13 +5,13 @@ import (
 )
 
 type PublishVideoReq struct {
-	Title string `json:"title"`
+	Title string `json:"title" binding:"required"`
 }
 
 type VideoFeedReq struct {
-	LastTime common.LocalTime `json:"last_time"`
+	LastTime common.LocalTime `json:"last_time" binding:"required"`
 }
 
 type VideoListReq struct {
-	UserId uint64 `json:"user_id"`
+	UserId uint64 `json:"user_id" binding:"required"`
 }

@@ -20,13 +20,13 @@ func (u UserServiceImpl) GetTableUserList() []entity.TableUser {
 	return tableUsers
 }
 
-func (u UserServiceImpl) GetTableUserByUsername(name string) entity.TableUser {
+func (u UserServiceImpl) GetTableUserByUsername(name string) (entity.TableUser, error) {
 	tableUser, err := dao.GetTableUserByName(name)
 	if err != nil {
 		log.Println(err.Error())
-		return tableUser
+		return tableUser, err
 	}
-	return tableUser
+	return tableUser, nil
 }
 
 func (u UserServiceImpl) GetTableUserById(id uint64) (response.UserInfoRes, error) {
