@@ -2,6 +2,7 @@ package main
 
 import (
 	"faker-douyin/global"
+	"faker-douyin/middleware"
 	"faker-douyin/model/dao"
 	"faker-douyin/router"
 	"faker-douyin/utils"
@@ -14,6 +15,7 @@ func main() {
 	dao.Init()
 	utils.InitFtp()
 	utils.InitSSH()
+	middleware.InitRedis()
 	gin.SetMode(global.Config.Server.AppMode)
 	r := gin.New()
 	//logger, _ := zap.NewProduction()

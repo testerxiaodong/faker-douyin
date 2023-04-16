@@ -2,7 +2,6 @@ package dao
 
 import (
 	"faker-douyin/global"
-	"faker-douyin/model/entity"
 	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -35,7 +34,8 @@ func Init() {
 		log.Panicln("err:", err.Error())
 	}
 	fmt.Println("数据库链接成功")
-	err = Db.AutoMigrate(&entity.TableUser{}, &entity.TableVideo{}, entity.TableComment{})
+	// err = Db.AutoMigrate(&entity.User{}, &entity.TableVideo{}, entity.TableComment{})
+	SetDefault(Db)
 	if err != nil {
 		panic(fmt.Sprintf("数据库迁移失败,%s", err))
 	}

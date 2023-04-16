@@ -14,18 +14,18 @@ type VideoService interface {
 
 	// GetVideo
 	// 传入视频id获得对应的视频对象
-	GetVideo(videoId int64, userId uint64) (entity.TableVideo, error)
+	GetVideo(videoId int64, userId int64) (entity.Video, error)
 
 	// Publish
 	// 将传入的视频流保存在文件服务器中，并存储在mysql表中
 	// 5.23 加入title
-	Publish(data *multipart.FileHeader, userId uint64, title string) (response.PublishVideoRes, error)
+	Publish(data *multipart.FileHeader, userId int64, title string) (response.PublishVideoRes, error)
 
 	// List
 	// 通过userId来查询对应用户发布的视频，并返回对应的视频切片数组
-	List(userId uint64) ([]response.VideoInfoRes, error)
+	List(userId int64) ([]response.VideoInfoRes, error)
 
 	// GetVideoIdList
 	// 通过一个作者id，返回该用户发布的视频id切片数组
-	GetVideoIdList(userId uint64) ([]int64, error)
+	GetVideoIdList(userId int64) ([]int64, error)
 }

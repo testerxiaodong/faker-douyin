@@ -8,7 +8,7 @@ type CommentInfoRes struct {
 }
 
 // CommentList 实现sort.Interface接口
-type CommentList []CommentInfoRes
+type CommentList []*CommentInfoRes
 
 func (c CommentList) Len() int {
 	return len(c)

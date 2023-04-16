@@ -9,12 +9,12 @@ type CommentService interface {
 	/*
 		供videoService调用获取视频点赞数供前端展示
 	*/
-	Count(videoId uint64) (uint64, error)
+	Count(videoId int64) (int64, error)
 	/*
 		CommentService内部调用
 	*/
-	CommentInfo(commentId uint64) (entity.TableComment, error)
-	InsertComment(userId uint64, videoId uint64, commentContent string) (entity.TableComment, error)
-	DeleteComment(commentId uint64) error
-	CommentList(videoId uint64) ([]response.CommentInfoRes, error)
+	CommentInfo(commentId int64) (*entity.Comment, error)
+	InsertComment(userId int64, videoId int64, commentContent string) (*entity.Comment, error)
+	DeleteComment(commentId int64) error
+	CommentList(videoId int64) ([]*response.CommentInfoRes, error)
 }

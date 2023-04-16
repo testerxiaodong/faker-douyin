@@ -9,17 +9,14 @@ type UserService interface {
 	/*
 		个人使用
 	*/
-	// GetTableUserList 获得全部TableUser对象
-	GetTableUserList() []entity.TableUser
 
-	// GetTableUserByUsername 根据username获得TableUser对象
-	GetTableUserByUsername(name string) (entity.TableUser, error)
+	GetAllUser() ([]*entity.User, error)
 
-	// GetTableUserById 根据user_id获得TableUser对象
-	GetTableUserById(id uint64) (response.UserInfoRes, error)
+	GetByUsername(username string) (*entity.User, error)
 
-	// InsertTableUser 将tableUser插入表内
-	InsertTableUser(tableUser entity.TableUser) (entity.TableUser, error)
+	GetByID(id int64) (*response.UserInfoRes, error)
+
+	CreateUser(user entity.User) (*entity.User, error)
 	/*
 		他人使用
 	*/

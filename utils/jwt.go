@@ -18,13 +18,13 @@ var (
 )
 
 // GenerateToken 根据username生成一个token
-func GenerateToken(user *entity.TableUser) string {
+func GenerateToken(user *entity.User) string {
 	//fmt.Printf("generate token: %v\n", u)
 	expiresTime := time.Now().Unix() + int64(global.OneDayOfHours)
 	id64 := user.ID
 	fmt.Printf("id: %v\n", strconv.FormatInt(int64(id64), 10))
 	claims := jwt.StandardClaims{
-		Audience:  user.Name,
+		Audience:  user.Username,
 		ExpiresAt: expiresTime,
 		Id:        strconv.FormatInt(int64(id64), 10),
 		IssuedAt:  time.Now().Unix(),

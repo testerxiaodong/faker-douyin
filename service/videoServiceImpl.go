@@ -14,7 +14,15 @@ import (
 )
 
 type VideoServiceImpl struct {
-	UserService
+	UserService    UserService
+	CommentService CommentService
+}
+
+func NewVideoService(userService UserService, commentService CommentService) VideoService {
+	return &VideoServiceImpl{
+		UserService:    userService,
+		CommentService: commentService,
+	}
 }
 
 func (v *VideoServiceImpl) Feed(lastTime time.Time) ([]response.VideoInfoRes, time.Time, error) {
@@ -23,7 +31,7 @@ func (v *VideoServiceImpl) Feed(lastTime time.Time) ([]response.VideoInfoRes, ti
 		return nil, time.Time{}, nil
 	}
 	videos := make([]response.VideoInfoRes, 0, global.VideoCount)
-	tableVideos, err := dao.GetVideosByLastTime(lastTime)
+	tableVideos, err := dao.Video.Where(dao.Video.CreatedAt.Lt(lastTime)).Limit(global.VideoCount).Find()
 	fmt.Println("feed videos: ", tableVideos)
 	if err != nil {
 		fmt.Println("dao.GetVideosByLastTime 失败", err)
@@ -33,26 +41,31 @@ func (v *VideoServiceImpl) Feed(lastTime time.Time) ([]response.VideoInfoRes, ti
 		return videos, time.Time{}, nil
 	}
 	for _, video := range tableVideos {
-		videoAuthor, err := v.GetTableUserById(video.AuthorId)
+		videoAuthor, err := v.UserService.GetByID(video.AuthorID)
 		fmt.Println("UserService.GetTableUserById 成功", videoAuthor)
 		if err != nil {
-			fmt.Printf("UserServie.GetTableUserById 失败，user_id: %d", video.AuthorId)
+			fmt.Printf("UserServie.GetTableUserById 失败，user_id: %d", video.AuthorID)
 			return videos, time.Time{}, err
 		}
+		commentCount, err := v.CommentService.Count(video.ID)
+		if err != nil {
+			fmt.Println(err)
+		}
 		var singleVideo response.VideoInfoRes
-		singleVideo.Author = videoAuthor
-		singleVideo.Video = video
+		singleVideo.Author = *videoAuthor
+		singleVideo.Video = *video
+		singleVideo.CommentCount = commentCount
 		videos = append(videos, singleVideo)
 	}
 	return videos, tableVideos[len(videos)-1].CreatedAt, nil
 }
 
-func (v *VideoServiceImpl) GetVideo(videoId int64, userId uint64) (entity.TableVideo, error) {
+func (v *VideoServiceImpl) GetVideo(videoId int64, userId int64) (entity.Video, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (v *VideoServiceImpl) Publish(data *multipart.FileHeader, userId uint64, title string) (response.PublishVideoRes, error) {
+func (v *VideoServiceImpl) Publish(data *multipart.FileHeader, userId int64, title string) (response.PublishVideoRes, error) {
 	var video response.PublishVideoRes
 	file, err := data.Open()
 	defer func(file multipart.File) {
@@ -78,8 +91,17 @@ func (v *VideoServiceImpl) Publish(data *multipart.FileHeader, userId uint64, ti
 		VideoName: videoName,
 		ImageName: imageName,
 	}
-	tableVideo, err := dao.InsertTableVideo(title, videoName, imageName, userId)
-	video.Video = tableVideo
+	var newVideo entity.Video
+	newVideo.AuthorID = userId
+	newVideo.Title = title
+	newVideo.PlayURL = global.PlayUrlPrefix + videoName + ".mp4"
+	newVideo.CoverURL = global.CoverUrlPrefix + imageName + ".jpg"
+	err = dao.Video.Create(&newVideo)
+	if err != nil {
+		fmt.Println("dao.Video.Create failed, video_info: ", newVideo)
+		return response.PublishVideoRes{}, err
+	}
+	video.Video = newVideo
 	if err != nil {
 		log.Println("新增视频数据失败：", err)
 		return video, err
@@ -87,14 +109,15 @@ func (v *VideoServiceImpl) Publish(data *multipart.FileHeader, userId uint64, ti
 	return video, nil
 }
 
-func (v *VideoServiceImpl) List(userId uint64) ([]response.VideoInfoRes, error) {
+func (v *VideoServiceImpl) List(userId int64) ([]response.VideoInfoRes, error) {
 	var userVideoList []response.VideoInfoRes
 	if v.UserService == nil {
 		return userVideoList, nil
 	}
-	videos, err := dao.GetVideosByAuthorId(userId)
+	//videos, err := dao.GetVideosByAuthorId(userId)
+	videos, err := dao.Video.Where(dao.Video.AuthorID.Eq(userId)).Find()
 	if err != nil {
-		fmt.Println("dao.GetVideosByAuthorId 失败，user_id：", userId)
+		fmt.Println("dao.Video.Where(dao.Video.AuthorID.Eq(userId)) 失败，user_id：", userId)
 		return userVideoList, err
 	}
 	if len(videos) == 0 {
@@ -102,19 +125,19 @@ func (v *VideoServiceImpl) List(userId uint64) ([]response.VideoInfoRes, error) 
 	}
 	for _, video := range videos {
 		var userVideoInfo response.VideoInfoRes
-		userVideoInfo.Video = video
-		user, err := v.UserService.GetTableUserById(video.AuthorId)
+		userVideoInfo.Video = *video
+		user, err := v.UserService.GetByID(video.AuthorID)
 		if err != nil {
-			fmt.Println("UserService.GetTableUserById 失败，user_id：", video.AuthorId)
+			fmt.Println("UserService.GetTableUserById 失败，user_id：", video.AuthorID)
 			return userVideoList, err
 		}
-		userVideoInfo.Author = user
+		userVideoInfo.Author = *user
 		userVideoList = append(userVideoList, userVideoInfo)
 	}
 	return userVideoList, nil
 }
 
-func (v *VideoServiceImpl) GetVideoIdList(userId uint64) ([]int64, error) {
+func (v *VideoServiceImpl) GetVideoIdList(userId int64) ([]int64, error) {
 	//TODO implement me
 	panic("implement me")
 }
