@@ -1,40 +1,49 @@
 server:
-  AppMode: "debug"
-  HttpPort: ":8080"
+  mode: "development"
+  port: ":8080"
+  work_dir: "/Users/cengdong/GolandProjects/faker-douyin/"
+  log_dir: "/Users/cengdong/GolandProjects/faker-douyin/logs/"
+
+log:
+  filename: "douyin.log"
+  level:
+    app: "debug"
+    gorm: "info"
+  max_size: 10
+  max_age: 30
+  compress: false
 
 mysql:
-  Host: "192.168.18.3"
-  Port: "3306"
-  User: "root"
-  Password: "123456"
-  Name: "douyin"
+  host: "192.168.18.3"
+  port: "3306"
+  user: "root"
+  password: "123456"
+  name: "douyin"
 
 redis:
-  Host: "192.168.18.3"
-  Port: "6379"
-  Password: "123456"
+  host: "192.168.18.3"
+  port: "6379"
+  password: "123456"
+  db: 0
 
 rabbitmq:
-  Host: "192.168.18.3"
-  Port: "5672"
-  User: "guest"
-  Password: "guest"
-
-jwt:
-  secret: "douyin"
+  host: "192.168.18.3"
+  port: "5672"
+  user: "guest"
+  password: "guest"
 
 ssh:
-  Host: "192.168.18.3"
-  Port: "22"
-  User: "ftpuser"
-  Password: "123456"
-  TypeSsh: "password"
+  host: "192.168.18.3"
+  port: "22"
+  user: "ftpuser"
+  password: "123456"
+  type_ssh: "password"
 
 ftp:
-  Host: "192.168.18.3"
-  Port: "21"
-  User: "ftpuser"
-  Password: "123456"
-  HeartbeatTime: 120
+  host: "192.168.18.3"
+  port: "21"
+  user: "ftpuser"
+  password: "123456"
+  heartbeat_time: 120
 
 

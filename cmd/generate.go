@@ -1,23 +1,25 @@
 package main
 
 import (
-	"faker-douyin/global"
-	"faker-douyin/model/dao"
+	"gorm.io/driver/mysql"
 	"gorm.io/gen"
+	"gorm.io/gorm"
 	"strings"
 )
 
 // generate code
 func main() {
-	global.LoadConfig()
-	dao.Init()
+	DB, err := gorm.Open(mysql.Open("root:123456@tcp(192.168.18.3:3306)/douyin?charset=utf8mb4&parseTime=True&loc=Local"), &gorm.Config{})
+	if err != nil {
+		panic(err)
+	}
 	// specify the output directory (default: "./query")
 	// ### if you want to query without context constrain, set mode gen.WithoutContext ###
 	g := gen.NewGenerator(gen.Config{
 		// 相对执行`go run`时的路径, 会自动创建目录
 
-		OutPath:      "../model/dao",    //curd代码的输出路径
-		ModelPkgPath: "../model/entity", //model代码的输出路径
+		OutPath:      "/Users/cengdong/GolandProjects/faker-douyin/internal/app/dao",          //curd代码的输出路径
+		ModelPkgPath: "/Users/cengdong/GolandProjects/faker-douyin/internal/app/model/entity", //model代码的输出路径
 
 		// WithDefaultQuery 生成默认查询结构体(作为全局变量使用), 即`Q`结构体和其字段(各表模型)
 		// WithoutContext 生成没有context调用限制的代码供查询
@@ -40,7 +42,7 @@ func main() {
 		FieldWithTypeTag: true, // generate with gorm column type tag
 	})
 	// 设置目标 db
-	g.UseDB(dao.Db)
+	g.UseDB(DB)
 
 	// 自定义字段的数据类型
 	// 统一数字类型为int64,兼容protobuf和thrift
