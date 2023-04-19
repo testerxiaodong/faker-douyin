@@ -1,38 +1,33 @@
 package service
 
 import (
+	"faker-douyin/internal/app/consts"
 	"faker-douyin/internal/app/dao"
+	"faker-douyin/internal/app/log"
 	"faker-douyin/internal/app/model/dto/response"
 	"faker-douyin/internal/app/model/entity"
-	"faker-douyin/internal/pkg/const"
-	utils2 "faker-douyin/internal/pkg/utils"
+	"faker-douyin/internal/pkg/utils"
 	"fmt"
 	"github.com/google/uuid"
-	"log"
 	"mime/multipart"
 	"time"
 )
 
 type VideoServiceImpl struct {
-	dataRepo       *dao.DataRepo
+	DataRepo       *dao.DataRepo
+	FtpClient      *utils.FtpClient
+	FfmpegClient   *utils.FfmpegClient
 	UserService    UserService
 	CommentService CommentService
 }
 
-func NewVideoService(userService UserService, commentService CommentService) VideoService {
-	return &VideoServiceImpl{
-		UserService:    userService,
-		CommentService: commentService,
-	}
-}
-
 func (v *VideoServiceImpl) Feed(lastTime time.Time) ([]response.VideoInfoRes, time.Time, error) {
 	if v.UserService == nil {
-		fmt.Println("VideoService is nil")
+		log.AppLogger.Fatal("UserService is nil")
 		return nil, time.Time{}, nil
 	}
-	videos := make([]response.VideoInfoRes, 0, _const.VideoCount)
-	tableVideos, err := v.dataRepo.Db.Video.Where(v.dataRepo.Db.Video.CreatedAt.Lt(lastTime)).Limit(_const.VideoCount).Find()
+	videos := make([]response.VideoInfoRes, 0, consts.VideoCount)
+	tableVideos, err := v.DataRepo.Db.Video.Where(v.DataRepo.Db.Video.CreatedAt.Lt(lastTime)).Limit(consts.VideoCount).Order(v.DataRepo.Db.Video.CreatedAt.Desc()).Find()
 	fmt.Println("feed videos: ", tableVideos)
 	if err != nil {
 		fmt.Println("dao.GetVideosByLastTime 失败", err)
@@ -43,11 +38,11 @@ func (v *VideoServiceImpl) Feed(lastTime time.Time) ([]response.VideoInfoRes, ti
 	}
 	for _, video := range tableVideos {
 		videoAuthor, err := v.UserService.GetByID(video.AuthorID)
-		fmt.Println("UserService.GetTableUserById 成功", videoAuthor)
 		if err != nil {
-			fmt.Printf("UserServie.GetTableUserById 失败，user_id: %d", video.AuthorID)
+			log.AppLogger.Error("UserService.GetByID 失败")
 			return videos, time.Time{}, err
 		}
+		log.AppLogger.Info("UserService.GetByID success")
 		commentCount, err := v.CommentService.Count(video.ID)
 		if err != nil {
 			fmt.Println(err)
@@ -58,6 +53,7 @@ func (v *VideoServiceImpl) Feed(lastTime time.Time) ([]response.VideoInfoRes, ti
 		singleVideo.CommentCount = commentCount
 		videos = append(videos, singleVideo)
 	}
+	log.AppLogger.Info("feed success")
 	return videos, tableVideos[len(videos)-1].CreatedAt, nil
 }
 
@@ -76,48 +72,44 @@ func (v *VideoServiceImpl) Publish(data *multipart.FileHeader, userId int64, tit
 		}
 	}(file)
 	if err != nil {
-		log.Println("open upload file failed", err)
+		log.AppLogger.Error(err.Error())
 		return video, err
 	}
 	// 上传视频
 	videoName := uuid.NewString()
-	err = utils2.VideoFTP(file, videoName)
+	err = v.FtpClient.VideoFTP(file, videoName)
 	if err != nil {
-		log.Println("上传视频失败：", err)
 		return video, err
 	}
 	// 调用ffmpeg生成截图
 	imageName := uuid.NewString()
-	utils2.Ffchan <- utils2.Ffmsg{
+	v.FfmpegClient.Ffchan <- utils.Ffmsg{
 		VideoName: videoName,
 		ImageName: imageName,
 	}
 	var newVideo entity.Video
 	newVideo.AuthorID = userId
 	newVideo.Title = title
-	newVideo.PlayURL = _const.PlayUrlPrefix + videoName + ".mp4"
-	newVideo.CoverURL = _const.CoverUrlPrefix + imageName + ".jpg"
-	err = v.dataRepo.Db.Video.Create(&newVideo)
+	newVideo.PlayURL = consts.PlayUrlPrefix + videoName + ".mp4"
+	newVideo.CoverURL = consts.CoverUrlPrefix + imageName + ".jpg"
+	err = v.DataRepo.Db.Video.Create(&newVideo)
 	if err != nil {
-		fmt.Println("dao.Video.Create failed, video_info: ", newVideo)
+		log.AppLogger.Error(err.Error())
 		return response.PublishVideoRes{}, err
 	}
 	video.Video = newVideo
-	if err != nil {
-		log.Println("新增视频数据失败：", err)
-		return video, err
-	}
 	return video, nil
 }
 
 func (v *VideoServiceImpl) List(userId int64) ([]response.VideoInfoRes, error) {
 	var userVideoList []response.VideoInfoRes
 	if v.UserService == nil {
+		log.AppLogger.Error("UserService is nil")
 		return userVideoList, nil
 	}
-	videos, err := v.dataRepo.Db.Video.Where(v.dataRepo.Db.Video.AuthorID.Eq(userId)).Find()
+	videos, err := v.DataRepo.Db.Video.Where(v.DataRepo.Db.Video.AuthorID.Eq(userId)).Find()
 	if err != nil {
-		fmt.Println("dao.Video.Where(dao.Video.AuthorID.Eq(userId)) 失败，user_id：", userId)
+		log.AppLogger.Error(err.Error())
 		return userVideoList, err
 	}
 	if len(videos) == 0 {
@@ -128,12 +120,13 @@ func (v *VideoServiceImpl) List(userId int64) ([]response.VideoInfoRes, error) {
 		userVideoInfo.Video = *video
 		user, err := v.UserService.GetByID(video.AuthorID)
 		if err != nil {
-			fmt.Println("UserService.GetTableUserById 失败，user_id：", video.AuthorID)
+			log.AppLogger.Error(err.Error())
 			return userVideoList, err
 		}
 		userVideoInfo.Author = *user
 		userVideoList = append(userVideoList, userVideoInfo)
 	}
+	log.AppLogger.Info("get user video list success")
 	return userVideoList, nil
 }
 

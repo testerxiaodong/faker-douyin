@@ -10,7 +10,7 @@ import (
 )
 
 type CommentController struct {
-	s service.CommentService
+	CommentService service.CommentService
 }
 
 // CommentAction POST /douyin/v1/comment/action/ 发表评论和删除评论
@@ -29,7 +29,7 @@ func (cc *CommentController) CommentAction(c *gin.Context) {
 	// 删除逻辑
 	if commentActionReq.ActionType == 1 {
 		// 获取评论信息
-		comment, err := cc.s.CommentInfo(commentActionReq.CommentId)
+		comment, err := cc.CommentService.CommentInfo(commentActionReq.CommentId)
 		if err != nil {
 			common.FailWithMessage(err.Error(), c)
 			return
@@ -40,7 +40,7 @@ func (cc *CommentController) CommentAction(c *gin.Context) {
 			return
 		}
 		// 删除评论
-		err = cc.s.DeleteComment(commentActionReq.CommentId)
+		err = cc.CommentService.DeleteComment(commentActionReq.CommentId)
 		if err != nil {
 			common.FailWithMessage(err.Error(), c)
 			return
@@ -57,7 +57,7 @@ func (cc *CommentController) CommentAction(c *gin.Context) {
 			return
 		}
 		// 插入评论
-		comment, err := cc.s.InsertComment(int64(userId), commentActionReq.VideoId, commentActionReq.CommentContent)
+		comment, err := cc.CommentService.InsertComment(int64(userId), commentActionReq.VideoId, commentActionReq.CommentContent)
 		if err != nil {
 			common.FailWithMessage(err.Error(), c)
 			return
@@ -78,7 +78,7 @@ func (cc *CommentController) CommentList(c *gin.Context) {
 		return
 	}
 	// 获取评论列表
-	commentList, err := cc.s.CommentList(commentListReq.VideoId)
+	commentList, err := cc.CommentService.CommentList(commentListReq.VideoId)
 	if err != nil {
 		common.FailWithMessage(err.Error(), c)
 		return

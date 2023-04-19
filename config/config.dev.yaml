@@ -1,5 +1,5 @@
 server:
-  mode: "release"
+  mode: "debug"
   port: "8080"
   work_dir: "/Users/cengdong/GolandProjects/faker-douyin/"
   log_dir: "/Users/cengdong/GolandProjects/faker-douyin/logs/"

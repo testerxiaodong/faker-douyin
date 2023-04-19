@@ -2,32 +2,34 @@ package v1
 
 import (
 	"errors"
+	"faker-douyin/internal/app/log"
 	"faker-douyin/internal/app/model/common"
 	"faker-douyin/internal/app/model/dto/request"
 	"faker-douyin/internal/app/model/dto/response"
 	"faker-douyin/internal/app/model/entity"
 	"faker-douyin/internal/app/service"
-	utils2 "faker-douyin/internal/pkg/utils"
+	"faker-douyin/internal/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"log"
 )
 
 type UserController struct {
-	u service.UserService
+	U service.UserService
 }
 
 // Register POST douyin/v1/user/register/ 用户注册
 func (u *UserController) Register(c *gin.Context) {
 	var userRegisterReq request.UserRegisterReq
 	if err := c.ShouldBindJSON(&userRegisterReq); err != nil {
+		log.AppLogger.Error(err.Error())
 		common.FailWithMessage(err.Error(), c)
 		return
 	}
 	// 根据用户名查询用户是否存在
-	user, err := u.u.GetByUsername(userRegisterReq.Username)
+	user, err := u.U.GetByUsername(userRegisterReq.Username)
 	// 如果有错误，并且错误不是没有记录
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		log.AppLogger.Error(err.Error())
 		common.FailWithMessage(err.Error(), c)
 		return
 	}
@@ -35,18 +37,23 @@ func (u *UserController) Register(c *gin.Context) {
 	if user == nil {
 		newUser := entity.User{
 			Username: userRegisterReq.Username,
-			Password: utils2.EnCoder(userRegisterReq.Password),
+			Password: utils.EnCoder(userRegisterReq.Password),
 		}
 		// 用户名不存在，插入数据
-		user, err := u.u.CreateUser(newUser)
+		user, err := u.U.CreateUser(newUser)
 		if err != nil {
-			println("Insert Data Fail")
+			log.AppLogger.Error(err.Error())
 			common.FailWithMessage(err.Error(), c)
 			return
 		}
-		token := utils2.GenerateToken(user)
-		log.Println("注册返回的id: ", user.ID)
+		token, err := utils.GenerateToken(user)
+		if err != nil {
+			log.AppLogger.Error("generate token failed")
+		}
+		log.AppLogger.Info("generate token success")
 		common.OkWithDetailed(response.UserRegisterSuccessRes{ID: uint64(user.ID), Token: token}, "注册成功", c)
+		log.AppLogger.Info("user register success")
+		return
 	} else {
 		// 用户名存在，不允许注册
 		common.FailWithMessage("User already exist", c)
@@ -63,14 +70,17 @@ func (u *UserController) Login(c *gin.Context) {
 		return
 	}
 	// 根据name查询用户
-	user, err := u.u.GetByUsername(userLoginReq.Username)
+	user, err := u.U.GetByUsername(userLoginReq.Username)
 	if err != nil {
 		common.FailWithMessage(err.Error(), c)
 		return
 	}
 	// 查询成功，将密码加密后与数据库密码比较
-	if utils2.EnCoder(userLoginReq.Password) == user.Password {
-		token := utils2.GenerateToken(user)
+	if utils.EnCoder(userLoginReq.Password) == user.Password {
+		token, err := utils.GenerateToken(user)
+		if err != nil {
+			log.AppLogger.Error("generate token failed")
+		}
 		common.OkWithDetailed(response.UserLoginSuccessRes{ID: uint64(user.ID), Token: token}, "登陆成功", c)
 		return
 	} else {
@@ -88,7 +98,7 @@ func (u *UserController) UserInfo(c *gin.Context) {
 		return
 	}
 	// 根据id查询用户信息
-	userInfo, err := u.u.GetByID(userInfoReq.UserId)
+	userInfo, err := u.U.GetByID(userInfoReq.UserId)
 	if err != nil {
 		common.FailWithMessage("user not exist", c)
 		return

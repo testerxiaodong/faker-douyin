@@ -2,9 +2,8 @@ package utils
 
 import (
 	"errors"
+	"faker-douyin/internal/app/consts"
 	"faker-douyin/internal/app/model/entity"
-	"faker-douyin/internal/pkg/const"
-	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"strconv"
 	"time"
@@ -18,11 +17,9 @@ var (
 )
 
 // GenerateToken 根据username生成一个token
-func GenerateToken(user *entity.User) string {
-	//fmt.Printf("generate token: %v\n", u)
-	expiresTime := time.Now().Unix() + int64(_const.OneDayOfHours)
+func GenerateToken(user *entity.User) (string, error) {
+	expiresTime := time.Now().Unix() + int64(consts.OneDayOfHours)
 	id64 := user.ID
-	fmt.Printf("id: %v\n", strconv.FormatInt(int64(id64), 10))
 	claims := jwt.StandardClaims{
 		Audience:  user.Username,
 		ExpiresAt: expiresTime,
@@ -32,21 +29,19 @@ func GenerateToken(user *entity.User) string {
 		NotBefore: time.Now().Unix(),
 		Subject:   "token",
 	}
-	var jwtSecret = []byte(_const.Secret)
+	var jwtSecret = []byte(consts.Secret)
 	tokenClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	if token, err := tokenClaims.SignedString(jwtSecret); err == nil {
-		println("generate token success!\n")
-		return token
+		return token, nil
 	} else {
-		println("generate token fail\n")
-		return "fail"
+		return "", err
 	}
 }
 
 // ParseToken 从token中解析出StandardClaims
 func ParseToken(token string) (*jwt.StandardClaims, error) {
 	jwtToken, err := jwt.ParseWithClaims(token, &jwt.StandardClaims{}, func(token *jwt.Token) (i interface{}, e error) {
-		return []byte(_const.Secret), nil
+		return []byte(consts.Secret), nil
 	})
 	if err != nil {
 		if ve, ok := err.(*jwt.ValidationError); ok {

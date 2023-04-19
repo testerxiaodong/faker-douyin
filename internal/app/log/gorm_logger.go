@@ -1,9 +1,9 @@
-package zap
+package log
 
 import (
 	"context"
 	"errors"
-	"faker-douyin/internal/pkg/config"
+	"faker-douyin/internal/app/config"
 	"fmt"
 	"runtime"
 	"strings"
@@ -14,7 +14,7 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-type gormLogger struct {
+type GormLogger struct {
 	logger.Config
 	traceStr     string
 	traceWarnStr string
@@ -22,14 +22,14 @@ type gormLogger struct {
 	zapLogger    *zap.Logger
 }
 
-func NewGormLogger(conf *config.Config, zapLogger *zap.Logger) logger.Interface {
+func NewGormLogger(conf *config.Config, zapLogger *zap.Logger) *GormLogger {
 	logConfig := logger.Config{
 		SlowThreshold:             200 * time.Millisecond,
 		LogLevel:                  GetGormLogLevel(conf.Log.Levels.Gorm),
 		IgnoreRecordNotFoundError: true,
 		Colorful:                  config.IsDev(),
 	}
-	gl := &gormLogger{
+	gl := &GormLogger{
 		Config:       logConfig,
 		traceStr:     "[%.3fms] [rows:%v] %s",
 		traceWarnStr: "%s [%.3fms] [rows:%v] %s",
@@ -44,7 +44,7 @@ func NewGormLogger(conf *config.Config, zapLogger *zap.Logger) logger.Interface 
 	return gl
 }
 
-func (l *gormLogger) LogMode(level logger.LogLevel) logger.Interface {
+func (l *GormLogger) LogMode(level logger.LogLevel) logger.Interface {
 	newLogger := *l
 	newLogger.LogLevel = level
 	return &newLogger
@@ -52,19 +52,19 @@ func (l *gormLogger) LogMode(level logger.LogLevel) logger.Interface {
 
 const level = 2
 
-func (l *gormLogger) Info(ctx context.Context, msg string, data ...interface{}) {
+func (l *GormLogger) Info(ctx context.Context, msg string, data ...interface{}) {
 	l.zapLogger.WithOptions(zap.AddCallerSkip(getCallerSkip()-level)).Sugar().Infof(msg, data...)
 }
 
-func (l *gormLogger) Warn(ctx context.Context, msg string, data ...interface{}) {
+func (l *GormLogger) Warn(ctx context.Context, msg string, data ...interface{}) {
 	l.zapLogger.WithOptions(zap.AddCallerSkip(getCallerSkip()-level)).Sugar().Warnf(msg, data...)
 }
 
-func (l *gormLogger) Error(ctx context.Context, msg string, data ...interface{}) {
+func (l *GormLogger) Error(ctx context.Context, msg string, data ...interface{}) {
 	l.zapLogger.WithOptions(zap.AddCallerSkip(getCallerSkip()-level)).Sugar().Errorf(msg, data...)
 }
 
-func (l *gormLogger) Trace(ctx context.Context, begin time.Time, fc func() (sql string, rowsAffected int64), err error) {
+func (l *GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (sql string, rowsAffected int64), err error) {
 	if l.LogLevel <= logger.Silent {
 		return
 	}

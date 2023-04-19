@@ -7,15 +7,11 @@ import (
 )
 
 type UserServiceImpl struct {
-	dataRepo *dao.DataRepo
-}
-
-func NewUserService() UserService {
-	return &UserServiceImpl{}
+	DataRepo *dao.DataRepo
 }
 
 func (u *UserServiceImpl) GetAllUser() ([]*entity.User, error) {
-	users, err := u.dataRepo.Db.User.Find()
+	users, err := u.DataRepo.Db.User.Find()
 	if err != nil {
 		return nil, err
 	}
@@ -23,7 +19,7 @@ func (u *UserServiceImpl) GetAllUser() ([]*entity.User, error) {
 }
 
 func (u *UserServiceImpl) GetByUsername(username string) (*entity.User, error) {
-	user, err := u.dataRepo.Db.User.Where(u.dataRepo.Db.User.Username.Eq(username)).First()
+	user, err := u.DataRepo.Db.User.Where(u.DataRepo.Db.User.Username.Eq(username)).First()
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +27,7 @@ func (u *UserServiceImpl) GetByUsername(username string) (*entity.User, error) {
 }
 
 func (u *UserServiceImpl) GetByID(id int64) (*response.UserInfoRes, error) {
-	user, err := u.dataRepo.Db.User.Where(u.dataRepo.Db.User.ID.Eq(id)).First()
+	user, err := u.DataRepo.Db.User.Where(u.DataRepo.Db.User.ID.Eq(id)).First()
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +42,7 @@ func (u *UserServiceImpl) CreateUser(user entity.User) (*entity.User, error) {
 		Username: user.Username,
 		Password: user.Password,
 	}
-	err := u.dataRepo.Db.User.Create(newUser)
+	err := u.DataRepo.Db.User.Create(newUser)
 	if err != nil {
 		return nil, err
 	}

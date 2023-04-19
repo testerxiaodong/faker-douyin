@@ -1,4 +1,4 @@
-package _const
+package consts
 
 import "time"
 
@@ -9,6 +9,11 @@ const (
 	OneMonth      = 60 * 60 * 24 * 30
 	OneYear       = 365 * 60 * 60 * 24
 	ExpireTime    = time.Hour * 48 // 设置Redis数据热度消散时间。
+)
+
+const (
+	RedisVideoCommentPrefix = "video_id:comment_id:"
+	RedisCommentVideoPrefix = "comment_id:video_id:"
 )
 
 // VideoCount 每次获取视频流的数量

@@ -1,11 +1,11 @@
 package utils
 
 import (
-	"faker-douyin/internal/pkg/config"
-	"faker-douyin/internal/pkg/const"
+	"faker-douyin/internal/app/config"
+	"faker-douyin/internal/app/consts"
+	"faker-douyin/internal/app/log"
 	"fmt"
 	"golang.org/x/crypto/ssh"
-	"log"
 	"time"
 )
 
@@ -14,11 +14,14 @@ type Ffmsg struct {
 	ImageName string
 }
 
-var ClientSSH *ssh.Client
-var Ffchan chan Ffmsg
+type FfmpegClient struct {
+	SshClient *ssh.Client
+	Ffchan    chan Ffmsg
+}
 
-// InitSSH 建立SSH客户端，但是会不会超时导致无法链接，这个需要做一些措施
-func InitSSH(config *config.Config) {
+// NewFfmpegClient  建立SSH客户端，但是会不会超时导致无法链接，这个需要做一些措施
+func NewFfmpegClient(config *config.Config) *FfmpegClient {
+	var ffmpegClient FfmpegClient
 	var err error
 	//创建ssh登陆配置
 	SshConfig := &ssh.ClientConfig{
@@ -33,37 +36,37 @@ func InitSSH(config *config.Config) {
 	}
 	//dial 获取ssh client
 	addr := fmt.Sprintf("%s:%s", config.Ssh.Host, config.Ssh.Port)
-	ClientSSH, err = ssh.Dial("tcp", addr, SshConfig)
+	ffmpegClient.SshClient, err = ssh.Dial("tcp", addr, SshConfig)
 	if err != nil {
-		log.Fatal("创建ssh client 失败", err)
+		log.AppLogger.Error(err.Error())
 	}
-	log.Printf("获取到客户端：%v", ClientSSH)
 	//建立通道，作为队列使用,并且确立缓冲区大小
-	Ffchan = make(chan Ffmsg, _const.MaxMsgCount)
+	ffmpegClient.Ffchan = make(chan Ffmsg, consts.MaxMsgCount)
 	//建立携程用于派遣
-	go dispatcher()
-	go SshKeepAlive()
+	go ffmpegClient.dispatcher()
+	go ffmpegClient.SshKeepAlive()
+	return &ffmpegClient
 }
 
 // 通过增加携程，将获取的信息进行派遣，当信息处理失败之后，还会将处理方式放入通道形成的队列中
-func dispatcher() {
-	for ffmsg := range Ffchan {
-		go func(f Ffmsg) {
-			err := Ffmpeg(f.VideoName, f.ImageName)
+func (f *FfmpegClient) dispatcher() {
+	for ffmsg := range f.Ffchan {
+		go func(fs Ffmsg) {
+			err := f.Ffmpeg(fs.VideoName, fs.ImageName)
 			if err != nil {
-				Ffchan <- f
-				log.Fatal("派遣失败：重新派遣")
+				f.Ffchan <- fs
+				log.AppLogger.Error(err.Error())
 			}
-			log.Printf("视频%v截图处理成功", f.VideoName)
+			log.AppLogger.Debug(fmt.Sprintf("视频处理成功，video name: %s", fs.VideoName))
 		}(ffmsg)
 	}
 }
 
 // Ffmpeg 通过远程调用ffmpeg命令来创建视频截图
-func Ffmpeg(videoName string, imageName string) error {
-	session, err := ClientSSH.NewSession()
+func (f *FfmpegClient) Ffmpeg(videoName string, imageName string) error {
+	session, err := f.SshClient.NewSession()
 	if err != nil {
-		log.Fatal("创建ssh session 失败", err)
+		log.AppLogger.Error(err.Error())
 	}
 	defer func(session *ssh.Session) {
 		err := session.Close()
@@ -74,20 +77,19 @@ func Ffmpeg(videoName string, imageName string) error {
 	//执行远程命令 ffmpeg -ss 00:00:01 -i /home/ftpuser/video/1.mp4 -vframes 1 /home/ftpuser/images/4.jpg
 	combo, err := session.CombinedOutput("ls;/usr/local/ffmpeg/bin/ffmpeg -ss 00:00:01 -i /home/ftpuser/videos/" + videoName + ".mp4 -vframes 1 /home/ftpuser/images/" + imageName + ".jpg")
 	if err != nil {
-		//log.Fatal("远程执行cmd 失败", err)
-		log.Fatal("命令输出:", string(combo))
+		log.AppLogger.Error(err.Error())
 		return err
 	}
-	//fmt.Println("命令输出:", string(combo))
+	log.AppLogger.Debug(fmt.Sprintf("命令输出：%s", combo))
 	return nil
 }
 
 // SshKeepAlive 维持长链接
-func SshKeepAlive() {
-	time.Sleep(time.Duration(_const.SSHHeartbeatTime) * time.Second)
-	session, _ := ClientSSH.NewSession()
+func (f *FfmpegClient) SshKeepAlive() {
+	time.Sleep(time.Duration(consts.SSHHeartbeatTime) * time.Second)
+	session, _ := f.SshClient.NewSession()
 	err := session.Close()
 	if err != nil {
-		log.Println("close ssh session failed：", err)
+		log.AppLogger.Error(err.Error())
 	}
 }

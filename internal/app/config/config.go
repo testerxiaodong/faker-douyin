@@ -2,7 +2,6 @@ package config
 
 import (
 	"flag"
-	"fmt"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"os"
@@ -99,7 +98,6 @@ func NewConfig() *Config {
 	if err := viper.Unmarshal(conf); err != nil {
 		panic(err)
 	}
-	fmt.Println(conf)
 	if conf.Server.WorkDir == "" {
 		pwd, err := os.Getwd()
 		if err != nil {
@@ -124,7 +122,6 @@ func NewConfig() *Config {
 			*path = temp
 		}
 	}
-	fmt.Println(conf.Server.WorkDir)
 	normalizeDir(&conf.Server.LogDir, "logs")
 
 	initDirectory(conf)
@@ -143,12 +140,13 @@ func initDirectory(conf *Config) {
 	}
 	err := mkdirFunc(conf.Server.LogDir, nil)
 	if err != nil {
-		panic(fmt.Errorf("initDirectory err=%v", err))
+		panic(err)
 	}
 }
 
 var mode string
 
+// IsDev 用于日志器的配置
 func IsDev() bool {
-	return mode == "development"
+	return mode == "debug"
 }
