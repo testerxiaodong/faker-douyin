@@ -31,6 +31,7 @@ func (r *Router) RegisterAPI(app *gin.Engine) {
 		gVideo := api1.Group("video")
 		{
 			gVideo.POST("publish", middleware.Auth(), r.VideoController.Publish)
+			gVideo.POST("delete", middleware.Auth(), r.VideoController.Delete)
 			gVideo.GET("feed", r.VideoController.Feed)
 			gVideo.GET("publish/list", middleware.Auth(), r.VideoController.List)
 		}

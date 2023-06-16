@@ -25,11 +25,10 @@ func (cc *CommentController) CommentAction(c *gin.Context) {
 	id, _ := c.Get("userId")
 	// 从上下文中获取用户id
 	userId, err := strconv.Atoi(id.(string))
-	// 依赖倒转原则，面向抽象层进行开发
 	// 删除逻辑
 	if commentActionReq.ActionType == 1 {
 		// 获取评论信息
-		comment, err := cc.CommentService.CommentInfo(commentActionReq.CommentId)
+		comment, err := cc.CommentService.GetCommentById(commentActionReq.CommentId)
 		if err != nil {
 			common.FailWithMessage(err.Error(), c)
 			return

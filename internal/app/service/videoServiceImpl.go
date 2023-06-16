@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"faker-douyin/internal/app/consts"
 	"faker-douyin/internal/app/dao"
 	"faker-douyin/internal/app/log"
@@ -30,7 +31,7 @@ func (v *VideoServiceImpl) Feed(lastTime time.Time) ([]response.VideoInfoRes, ti
 	tableVideos, err := v.DataRepo.Db.Video.Where(v.DataRepo.Db.Video.CreatedAt.Lt(lastTime)).Limit(consts.VideoCount).Order(v.DataRepo.Db.Video.CreatedAt.Desc()).Find()
 	fmt.Println("feed videos: ", tableVideos)
 	if err != nil {
-		fmt.Println("dao.GetVideosByLastTime 失败", err)
+		log.AppLogger.Error(err.Error())
 		return videos, time.Time{}, err
 	}
 	if len(tableVideos) == 0 {
@@ -43,7 +44,7 @@ func (v *VideoServiceImpl) Feed(lastTime time.Time) ([]response.VideoInfoRes, ti
 			return videos, time.Time{}, err
 		}
 		log.AppLogger.Info("UserService.GetByID success")
-		commentCount, err := v.CommentService.Count(video.ID)
+		commentCount, err := v.CommentService.GetCommentCountByVideoId(video.ID)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -57,9 +58,12 @@ func (v *VideoServiceImpl) Feed(lastTime time.Time) ([]response.VideoInfoRes, ti
 	return videos, tableVideos[len(videos)-1].CreatedAt, nil
 }
 
-func (v *VideoServiceImpl) GetVideo(videoId int64, userId int64) (entity.Video, error) {
-	//TODO implement me
-	panic("implement me")
+func (v *VideoServiceImpl) GetVideoById(videoId int64) (*entity.Video, error) {
+	video, err := v.DataRepo.Db.Video.Where(v.DataRepo.Db.Video.ID.Eq(videoId)).First()
+	if err != nil {
+		return &entity.Video{}, err
+	}
+	return video, nil
 }
 
 func (v *VideoServiceImpl) Publish(data *multipart.FileHeader, userId int64, title string) (response.PublishVideoRes, error) {
@@ -99,6 +103,22 @@ func (v *VideoServiceImpl) Publish(data *multipart.FileHeader, userId int64, tit
 	}
 	video.Video = newVideo
 	return video, nil
+}
+
+func (v *VideoServiceImpl) Delete(userId int64, videoId int64) error {
+	video, err := v.DataRepo.Db.Video.Select(v.DataRepo.Db.Video.AuthorID).Where(v.DataRepo.Db.Video.ID.Eq(videoId)).First()
+	if err != nil {
+		log.AppLogger.Error(err.Error())
+		return err
+	}
+	if video.AuthorID != userId {
+		return errors.New("该视频非当前用户所发布，无权限删除")
+	}
+	_, err = v.DataRepo.Db.Video.Where(v.DataRepo.Db.Video.ID.Eq(video.AuthorID)).Delete()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (v *VideoServiceImpl) List(userId int64) ([]response.VideoInfoRes, error) {

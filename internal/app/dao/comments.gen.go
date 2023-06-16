@@ -6,7 +6,7 @@ package dao
 
 import (
 	"context"
-	"faker-douyin/internal/app/model/entity"
+
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
@@ -15,6 +15,8 @@ import (
 	"gorm.io/gen/field"
 
 	"gorm.io/plugin/dbresolver"
+
+	"faker-douyin/internal/app/model/entity"
 )
 
 func newComment(db *gorm.DB, opts ...gen.DOOption) comment {

@@ -2,7 +2,7 @@ package response
 
 // CommentInfoRes 获取评论列表中单个评论信息
 type CommentInfoRes struct {
-	Id       uint64      `json:"id"`
+	Id       int64       `json:"id"`
 	UserInfo UserInfoRes `json:"user_info"` // 评论的用户信息，方便前端展示
 	Content  string      `json:"content"`
 }

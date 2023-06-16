@@ -4,6 +4,7 @@ import (
 	"context"
 	"faker-douyin/internal/app/config"
 	"faker-douyin/internal/app/log"
+	"faker-douyin/internal/app/model/entity"
 	"fmt"
 	"github.com/google/wire"
 	"github.com/redis/go-redis/v9"
@@ -47,6 +48,7 @@ func NewGormMysql(config *config.Config, gormLogger *log.GormLogger) *Query {
 		log.AppLogger.Error(fmt.Sprintf("连接Mysql服务器失败：%s", err.Error()))
 	}
 	log.AppLogger.Debug("Mysql服务器连接成功")
+	DB.AutoMigrate(&entity.Comment{}, &entity.Video{}, &entity.User{}, &entity.Like{})
 	sqlDB, err := DB.DB()
 	if err != nil {
 		log.AppLogger.Error(fmt.Sprintf("获取数据库连接失败：%s", err.Error()))

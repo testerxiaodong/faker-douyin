@@ -12,14 +12,18 @@ type VideoService interface {
 	// 通过传入时间戳，当前用户的id，返回对应的视频切片数组，以及视频数组中最早的发布时间
 	Feed(lastTime time.Time) ([]response.VideoInfoRes, time.Time, error)
 
-	// GetVideo
+	// GetVideoById GetVideo
 	// 传入视频id获得对应的视频对象
-	GetVideo(videoId int64, userId int64) (entity.Video, error)
+	GetVideoById(videoId int64) (*entity.Video, error)
 
 	// Publish
 	// 将传入的视频流保存在文件服务器中，并存储在mysql表中
 	// 5.23 加入title
 	Publish(data *multipart.FileHeader, userId int64, title string) (response.PublishVideoRes, error)
+
+	// Delete
+	// 删除视频
+	Delete(userId int64, videoId int64) error
 
 	// List
 	// 通过userId来查询对应用户发布的视频，并返回对应的视频切片数组

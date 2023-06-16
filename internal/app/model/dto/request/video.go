@@ -8,6 +8,10 @@ type PublishVideoReq struct {
 	Title string `json:"title" binding:"required"`
 }
 
+type VideoDeleteReq struct {
+	VideoId int64 `json:"video_id" binding:"required"`
+}
+
 type VideoFeedReq struct {
 	LastTime common.LocalTime `json:"last_time" binding:"required"`
 }

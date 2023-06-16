@@ -10,7 +10,8 @@ import (
 	"faker-douyin/internal/app/api/v1"
 	"faker-douyin/internal/app/config"
 	"faker-douyin/internal/app/dao"
-	log2 "faker-douyin/internal/app/log"
+	"faker-douyin/internal/app/log"
+	"faker-douyin/internal/app/middleware/rabbitmq"
 	"faker-douyin/internal/app/router"
 	"faker-douyin/internal/app/service"
 	"faker-douyin/internal/pkg/utils"
@@ -20,8 +21,8 @@ import (
 
 func CreateApp() (*App, error) {
 	configConfig := config.NewConfig()
-	logger := log2.NewLogger(configConfig)
-	gormLogger := log2.NewGormLogger(configConfig, logger)
+	logger := log.NewLogger(configConfig)
+	gormLogger := log.NewGormLogger(configConfig, logger)
 	query := dao.NewGormMysql(configConfig, gormLogger)
 	client := dao.NewRedisClient(configConfig)
 	dataRepo := dao.NewDataRepo(query, client)
@@ -33,9 +34,12 @@ func CreateApp() (*App, error) {
 	}
 	ftpClient := utils.NewFtpClient(configConfig)
 	ffmpegClient := utils.NewFfmpegClient(configConfig)
+	rabbitMQ := rabbitmq.NewRabbitMQ(configConfig)
+	commentRabbitMQ := rabbitmq.NewCommentRabbitMQ(rabbitMQ, client)
 	commentServiceImpl := &service.CommentServiceImpl{
-		DataRepo:    dataRepo,
-		UserService: userServiceImpl,
+		DataRepo:        dataRepo,
+		CommentRabbitMQ: commentRabbitMQ,
+		UserService:     userServiceImpl,
 	}
 	videoServiceImpl := &service.VideoServiceImpl{
 		DataRepo:       dataRepo,

@@ -8,6 +8,7 @@ import (
 	"faker-douyin/internal/app/config"
 	"faker-douyin/internal/app/dao"
 	log "faker-douyin/internal/app/log"
+	"faker-douyin/internal/app/middleware/rabbitmq"
 	"faker-douyin/internal/app/router"
 	"faker-douyin/internal/app/service"
 	"faker-douyin/internal/pkg/utils"
@@ -22,6 +23,7 @@ func CreateApp() (*App, error) {
 		dao.ProviderSet,
 		utils.NewFtpClient,
 		utils.NewFfmpegClient,
+		rabbitmq.ProviderSet,
 		service.ProviderSet,
 		v1.ProviderSet,
 		router.ProviderSet,

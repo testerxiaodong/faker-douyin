@@ -52,6 +52,22 @@ func (v *VideoController) Publish(c *gin.Context) {
 	common.OkWithDetailed(video, "upload success", c)
 }
 
+func (v *VideoController) Delete(c *gin.Context) {
+	var videoDeleteReq request.VideoDeleteReq
+	err := c.ShouldBindJSON(&videoDeleteReq)
+	if err != nil {
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+	userId, err := strconv.ParseInt(c.GetString("userId"), 10, 64)
+	err = v.V.Delete(userId, videoDeleteReq.VideoId)
+	if err != nil {
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+	common.OkWithMessage("删除成功", c)
+}
+
 func (v *VideoController) Feed(c *gin.Context) {
 	var videoFeedReq request.VideoFeedReq
 	// 请求参数绑定与校验
