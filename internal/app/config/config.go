@@ -68,13 +68,14 @@ type Ftp struct {
 }
 
 type Config struct {
-	Server   Server   `mapstructure:"server"`
-	Log      Log      `mapstructure:"log"`
-	Mysql    Mysql    `mapstructure:"mysql"`
-	Redis    Redis    `mapstructure:"redis"`
-	RabbitMq RabbitMq `mapstructure:"rabbitmq"`
-	Ssh      Ssh      `mapstructure:"ssh"`
-	Ftp      Ftp      `mapstructure:"ftp"`
+	Sensitive string   `mapstructure:"sensitive"`
+	Server    Server   `mapstructure:"server"`
+	Log       Log      `mapstructure:"log"`
+	Mysql     Mysql    `mapstructure:"mysql"`
+	Redis     Redis    `mapstructure:"redis"`
+	RabbitMq  RabbitMq `mapstructure:"rabbitmq"`
+	Ssh       Ssh      `mapstructure:"ssh"`
+	Ftp       Ftp      `mapstructure:"ftp"`
 }
 
 func NewConfig() *Config {

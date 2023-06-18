@@ -21,6 +21,7 @@ func CreateApp() (*App, error) {
 		log.NewLogger,
 		log.NewGormLogger,
 		dao.ProviderSet,
+		utils.NewFilter,
 		utils.NewFtpClient,
 		utils.NewFfmpegClient,
 		rabbitmq.ProviderSet,

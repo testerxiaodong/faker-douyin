@@ -7,7 +7,10 @@ const (
 )
 
 const (
-	RedisVideoCommentPrefix = "video_id:comment_id:"
+	RedisCommentVideoPrefix     = "comment_id:video_id:"
+	RedisVideoCommentPrefix     = "video_id:comment_id:"
+	RedisUserLikeVideoPrefix    = "user_id:video_id:"
+	RedisVideoLikedByUserPrefix = "video_id:user_id"
 )
 
 // VideoCount 每次获取视频流的数量
@@ -26,9 +29,14 @@ const (
 )
 
 const (
-	CommentDelMode    = 0
-	CommentAddMode    = 1
-	VideoCommentQueue = "video_comment"
+	CommentDelMode        = 0
+	CommentAddMode        = 1
+	VideoCommentQueue     = "video_comment"
+	CommentVideoQueue     = "comment_video"
+	LikeCancelMode        = 0
+	LikeConfirmMode       = 1
+	VideoLikedByUserQueue = "video_liked_by_user"
+	UserLikeVideoQueue    = "user_like_video"
 )
 
 const (

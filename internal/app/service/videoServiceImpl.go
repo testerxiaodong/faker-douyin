@@ -61,7 +61,7 @@ func (v *VideoServiceImpl) Feed(lastTime time.Time) ([]response.VideoInfoRes, ti
 func (v *VideoServiceImpl) GetVideoById(videoId int64) (*entity.Video, error) {
 	video, err := v.DataRepo.Db.Video.Where(v.DataRepo.Db.Video.ID.Eq(videoId)).First()
 	if err != nil {
-		return &entity.Video{}, err
+		return nil, err
 	}
 	return video, nil
 }

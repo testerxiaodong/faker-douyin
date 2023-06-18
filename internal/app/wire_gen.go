@@ -32,14 +32,17 @@ func CreateApp() (*App, error) {
 	userController := v1.UserController{
 		U: userServiceImpl,
 	}
+	filter := utils.NewFilter(configConfig)
 	ftpClient := utils.NewFtpClient(configConfig)
 	ffmpegClient := utils.NewFfmpegClient(configConfig)
 	rabbitMQ := rabbitmq.NewRabbitMQ(configConfig)
-	commentRabbitMQ := rabbitmq.NewCommentRabbitMQ(rabbitMQ, client)
+	videoCommentRabbitMQ := rabbitmq.NewVideoCommentRabbitMQ(rabbitMQ, client)
+	commentVideoRabbitMQ := rabbitmq.NewCommentVideoRabbitMQ(rabbitMQ, client)
 	commentServiceImpl := &service.CommentServiceImpl{
-		DataRepo:        dataRepo,
-		CommentRabbitMQ: commentRabbitMQ,
-		UserService:     userServiceImpl,
+		DataRepo:             dataRepo,
+		VideoCommentRabbitMQ: videoCommentRabbitMQ,
+		CommentVideoRabbitMQ: commentVideoRabbitMQ,
+		UserService:          userServiceImpl,
 	}
 	videoServiceImpl := &service.VideoServiceImpl{
 		DataRepo:       dataRepo,
@@ -49,9 +52,11 @@ func CreateApp() (*App, error) {
 		CommentService: commentServiceImpl,
 	}
 	videoController := v1.VideoController{
-		V: videoServiceImpl,
+		Filter: filter,
+		V:      videoServiceImpl,
 	}
 	commentController := v1.CommentController{
+		Filter:         filter,
 		CommentService: commentServiceImpl,
 	}
 	routerRouter := &router.Router{

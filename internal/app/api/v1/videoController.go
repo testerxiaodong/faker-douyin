@@ -6,14 +6,15 @@ import (
 	"faker-douyin/internal/app/model/dto/request"
 	"faker-douyin/internal/app/model/dto/response"
 	"faker-douyin/internal/app/service"
-	"faker-douyin/internal/pkg/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/importcjj/sensitive"
 	"strconv"
 	"time"
 )
 
 type VideoController struct {
-	V service.VideoService
+	Filter *sensitive.Filter
+	V      service.VideoService
 }
 
 func (v *VideoController) Publish(c *gin.Context) {
@@ -30,7 +31,7 @@ func (v *VideoController) Publish(c *gin.Context) {
 		return
 	}
 	// 视频标题不能含有敏感词
-	result, _ := utils.Filter.FindIn(title)
+	result, _ := v.Filter.FindIn(title)
 	if result {
 		common.FailWithMessage("标题含有敏感词", c)
 		return

@@ -15,6 +15,6 @@ type CommentService interface {
 	*/
 	GetCommentById(commentId int64) (*entity.Comment, error)
 	InsertComment(userId int64, videoId int64, commentContent string) (*entity.Comment, error)
-	DeleteComment(commentId int64) error
+	DeleteComment(userId int64, commentId int64) error
 	CommentList(videoId int64) ([]*response.CommentInfoRes, error)
 }

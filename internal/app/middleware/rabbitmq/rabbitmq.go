@@ -8,7 +8,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
-var ProviderSet = wire.NewSet(NewRabbitMQ, NewCommentRabbitMQ)
+var ProviderSet = wire.NewSet(NewRabbitMQ, NewVideoCommentRabbitMQ, NewCommentVideoRabbitMQ, NewUserLikeVideoRabbitMQ, NewVideoLikedByUserRabbitMQ)
 
 type RabbitMQ struct {
 	Conn  *amqp.Connection

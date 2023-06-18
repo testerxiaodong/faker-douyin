@@ -4,12 +4,13 @@ import (
 	"faker-douyin/internal/app/model/common"
 	"faker-douyin/internal/app/model/dto/request"
 	"faker-douyin/internal/app/service"
-	"faker-douyin/internal/pkg/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/importcjj/sensitive"
 	"strconv"
 )
 
 type CommentController struct {
+	Filter         *sensitive.Filter
 	CommentService service.CommentService
 }
 
@@ -25,21 +26,10 @@ func (cc *CommentController) CommentAction(c *gin.Context) {
 	id, _ := c.Get("userId")
 	// 从上下文中获取用户id
 	userId, err := strconv.Atoi(id.(string))
-	// 删除逻辑
+	// 1. 删除逻辑
 	if commentActionReq.ActionType == 1 {
-		// 获取评论信息
-		comment, err := cc.CommentService.GetCommentById(commentActionReq.CommentId)
-		if err != nil {
-			common.FailWithMessage(err.Error(), c)
-			return
-		}
-		// 当前评论非当前用户发表，无权删除
-		if comment.UserID != int64(userId) {
-			common.FailWithMessage("current comment is not created by this user", c)
-			return
-		}
 		// 删除评论
-		err = cc.CommentService.DeleteComment(commentActionReq.CommentId)
+		err = cc.CommentService.DeleteComment(int64(userId), commentActionReq.CommentId)
 		if err != nil {
 			common.FailWithMessage(err.Error(), c)
 			return
@@ -47,10 +37,10 @@ func (cc *CommentController) CommentAction(c *gin.Context) {
 		common.OkWithMessage("删除评论成功", c)
 		return
 	}
-	// 新增逻辑
+	// 2. 新增逻辑
 	if commentActionReq.ActionType == 2 {
 		// 敏感词判断
-		result, _ := utils.Filter.FindIn(commentActionReq.CommentContent)
+		result, _ := cc.Filter.FindIn(commentActionReq.CommentContent)
 		if result {
 			common.FailWithMessage("评论包含敏感词，操作失败", c)
 			return
